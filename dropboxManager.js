@@ -1,11 +1,12 @@
 var
 request = require('request'),
-config = require('./config.js'),
+_ = require('underscore');
+
 q = require('q');
 
 var dbClass = function() {
 	this.headers = {
-		"Authorization":"Bearer "+(config.dropbox.token),
+		"Authorization":"Bearer "+process.env.TOKEN,
 	};
 };
 dbClass.prototype.FILE_PUT_URL = 'https://api-content.dropbox.com/1/files_put/auto/'

@@ -8,7 +8,10 @@
   },
   "dependencies": {
     "express": "~4.9.x",
-    "request": ""
+    "request": "",
+    "q": "",
+    "underscore": "",
+    "async": ""
   },
   "engines": {
     "node": "0.12.2"
