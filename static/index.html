@@ -1,9 +1,114 @@
 <html>
 
 <body>
+<link rel="stylesheet" href="https://cdn.plyr.io/1.1.13/plyr.css">
+<script src="https://cdn.plyr.io/1.1.13/plyr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 
  
-<div><h3>czesc</h3></div>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<div><h3>czesc</h3></div> 
+
+<!-- <video width="400" controls>
+  <source src="/file?p=/nuta/09.2014/15.%20Slasher.mp3" type="audio/mp3">
+  Your browser does not support HTML5 video.
+</video> -->
+
+<div style="bottom: 0px; position: fixed; width: 100%;" class="player">
+    <audio controls>
+        <!-- Audio files -->
+        <source src="/file?p=/nuta/GOLD/Abba%20–%20Dancing%20Queen.mp3" type="audio/mp3"> 
+
+        <!-- Fallback for browsers that don't support the <audio> element -->
+        <a href="/file?p=/nuta/09.2014/15.%20Slasher.mp3">Download</a>
+    </audio>
+</div>
+
+<ul id="list" style="margin-bottom: 100px;"></ul>
+<script>
+
+  
+
+
+
+$(function(){
+
+plyr.setup();
+var player = document.querySelectorAll(".player")[0].plyr;
+var media = player.media;
+
+
+var playlist = {
+	list: [],
+	currentIndex: 0,
+	play: function(index){	
+		if( !_.isUndefined(index) )	{
+			this.currentIndex = index;
+		}
+		player.source('/file?p='+this.list[this.currentIndex]);
+		player.play();
+	},
+	setNext: function(){
+		var nextIndex = this.currentIndex+1;
+		if(this.list.length === nextIndex){
+			this.currentIndex = 0;
+		}else{
+			this.currentIndex = nextIndex;
+		}
+		this.play();
+	}
+};
+
+
+
+
+// media.addEventListener("playing", function() { 
+//   console.log("playing");
+
+// });
+
+media.addEventListener("pause", function() { 
+  console.log("pause", media.currentTime, media.duration);
+  if(media.currentTime == media.duration){
+  		playlist.setNext();
+  }
+});
+
+$.get('/list2', function(responseObj){
+	console.log(responseObj);
+	var array = [];
+	_.each(responseObj, function(list){
+		array = array.concat(list)
+	});	
+	playlist.list = array;
+	init();
+
+	var itemEl = $('<li></li>');
+	var listEl = $('#list').on('click', 'li', function(event){
+		var id = +event.target.id.split('-')[1];
+		console.log(id);
+		playlist.play(id);
+	});
+	_.each(array, function(item, i){
+		listEl.append(itemEl.clone().text(item).attr('id', 'track-'+i));	
+	});
+	
+
+	array
+
+});
+
+
+function init(){
+	playlist.play();
+}
+
+
+});
+
+
+
+</script>
 
 </body>
 </html>

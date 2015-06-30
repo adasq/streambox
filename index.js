@@ -10,7 +10,7 @@ var crypto =require('crypto');
 var  Dropbox = require('./dropboxManager.js');
 var _ =require('underscore');
 require('colors');
-
+ 
 
 var dropbox = new Dropbox();
 
@@ -30,8 +30,6 @@ function getFiles (dir){
 // async.parallel([getFiles('nuta/GOLD')], function(err, result){
 // 	console.log(result);
 // });
-
-
 
 
 var filter = {
@@ -83,17 +81,27 @@ function dig(dirArray){
 
 	return deferred.promise;
 }
+var html = "";
+
 
 dig(['nuta']).then(function(){
 	fs.writeFile('aaa', JSON.stringify(fileTree))
+	 	 html = "<body>";
+ 	_.each(fileTree, function(file){
+ 		_.each(file, function(f){ 
+		html+= "<a href='/file?p="+f+"'>"+f+"</a>".replace("$src", f)  +"<br>";
+ 		})
+ 	});
+ 	html+="</body>"; 
+ 	console.log(html);
 });
 
 // getCats('nuta').then(function(res){
 // 	console.log(res);
 // });
 
-console.log('hi')
-return;
+
+ 
 
 
 // var file = {
@@ -108,22 +116,20 @@ return;
 // 	console.log('succ')
 // }, function(){
 // 	cosnoel.log('err')
-// });
-var html = "";
+// }); 
 
 
 
-
- dropbox.getFiles('nuta/GOLD').then(function(obj){  
- 	files = obj.contents;
- 	var dirs = _.filter(files, filter.isFile);
- 	console.log(dirs);
- 	//  html = "<body>";
- 	// _.each(files, function(file){
-		// html+= "<a href='/file?p="+file.path+"'>"+file.path+"</a>".replace("$src", file.path)  +"<br>";
- 	// });
- 	// html+="</body>"; 	
- });
+ // dropbox.getFiles('nuta/GOLD').then(function(obj){  
+ // 	files = obj.contents;
+ // 	var dirs = _.filter(files, filter.isFile);
+ // 	console.log(dirs);
+ // 	//  html = "<body>";
+ // 	// _.each(files, function(file){
+	// 	// html+= "<a href='/file?p="+file.path+"'>"+file.path+"</a>".replace("$src", file.path)  +"<br>";
+ // 	// });
+ // 	// html+="</body>"; 	
+ // });
  
 
 
@@ -137,24 +143,31 @@ var server = require('http').createServer(app);
 
 		
 
-app.get('/', function(req, res){
- 
-
+app.get('/list', function(req, res){ 
 			res.send(html);
-
-
 		});
+app.get('/list2', function(req, res){ 
+			res.send(fileTree);
+		});
+
+
+
+app.get('/', function(req, res){ 
+			res.send(html);
+		});
+
 
 			app.get('/file', function(req, res){
 
-				
-	dropbox.getFile(req.param('p'))
+				console.log(req.query.p);
+	dropbox.getFile(req.query.p)
 	.pipe(res);     
 
 			 
 		});
 
 server.listen(80);
+
 
 
 
