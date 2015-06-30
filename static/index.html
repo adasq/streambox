@@ -77,7 +77,7 @@ media.addEventListener("pause", function() {
   }
 });
 
-$.get('/list2', function(responseObj){
+$.get('/list', function(responseObj){
 	console.log(responseObj);
 	var array = [];
 	_.each(responseObj, function(list){

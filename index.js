@@ -24,9 +24,18 @@ app.get('/list', function(request, response) {
   response.send(fileTree);
 });
 
+			app.get('/file', function(req, res){
 
+		console.log(req.query.p);
+	dropbox.getFile(req.query.p)
+	.pipe(res);     
+
+			 
+		});
 
 var dropbox = new Dropbox();
+
+
 
 
 function getFiles (dir){
