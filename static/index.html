@@ -48,7 +48,7 @@ var playlist = {
 		if( !_.isUndefined(index) )	{
 			this.currentIndex = index;
 		}
-		player.source('/file?p='+this.list[this.currentIndex]);
+		player.source('/file?p='+encodeURIComponent(this.list[this.currentIndex]));
 		player.play();
 	},
 	setNext: function(){
@@ -89,7 +89,7 @@ $.get('/list', function(responseObj){
 	var itemEl = $('<li></li>');
 	var listEl = $('#list').on('click', 'li', function(event){
 		var id = +event.target.id.split('-')[1];
-		console.log(id);
+	
 		playlist.play(id);
 	});
 	_.each(array, function(item, i){
