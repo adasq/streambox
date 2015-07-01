@@ -48,7 +48,7 @@ var playlist = {
 		if( !_.isUndefined(index) )	{
 			this.currentIndex = index;
 		}
-		player.source('/file?p='+encodeURIComponent(this.list[this.currentIndex]));
+		player.source('/stream?mid='+encodeURIComponent(this.list[this.currentIndex]));
 		player.play();
 	},
 	setNext: function(){
