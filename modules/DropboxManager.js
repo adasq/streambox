@@ -7,6 +7,7 @@ var _ = require('underscore');
 var dropbox = new Dropbox();
 
 
+
 var filter = {
 	isDir: function(file){
 		return file.is_dir;
@@ -27,6 +28,7 @@ function getCats(path){
 		 files = obj.contents;		 
 		 var dirs = _.filter(files, filter.isDir);
 		 var fileList = _.filter(files, filter.isFile);	
+		 console.log(_.pluck(fileList,'path'));
 		 fileTree[path] = _.pluck(fileList,'path');
 		 
 		 deferred.resolve(_.pluck(dirs, 'path'));
@@ -35,6 +37,7 @@ function getCats(path){
 }
 
 function dig(dirArray){
+
 	var deferred = q.defer();
 	 if(dirArray.length === 0){
 	 	deferred.resolve();
