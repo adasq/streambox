@@ -1,25 +1,55 @@
 var express = require('express');
 var q = require('q');
 var async = require('async');
-var _ = require('underscore');
+var _ = require('underscore')
+  , everyauth = require('everyauth')
+  , conf = require('./conf');
 
 var DropboxManager = require('./modules/DropboxManager.js');
 var Dropbox = require('./modules/Dropbox.js');
 
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var session = require('express-session')
 
-var app = express();
-app.set('port', (process.env.PORT || 5000));
-var routes = require('./routes/routes.js');
-_.each(routes, function(routePackagePath){
-	var route = require('./routes/'+routePackagePath);
-	app[route.method](route.url ,route.cb);
-});
-app.use(express.static(__dirname + '/static'));
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
-});
 
-console.log('aa')
+var usersById = {};
+var nextUserId = 0;
+var usersByGoogleId = {};
+
+console.log(process.env.TOKEN);
+
+function addUser (source, sourceUser) {
+  var user;
+  if (arguments.length === 1) { // password-based
+    user = sourceUser = source;
+    user.id = ++nextUserId;
+    return usersById[nextUserId] = user;
+  } else { // non-password-based
+    user = usersById[++nextUserId] = {id: nextUserId};
+    user[source] = sourceUser;
+  }
+  return user;
+}
+
+everyauth.everymodule
+  .findUserById( function (req, id, callback) {
+  	console.log(usersById[id], req.url);
+    callback(null, usersById[id]);
+  });
+
+
+everyauth.google
+  .appId(conf.google.clientId)
+  .appSecret(conf.google.clientSecret)
+  .scope('https://www.googleapis.com/auth/userinfo.profile https://www.google.com/m8/feeds/')
+  .findOrCreateUser( function (sess, accessToken, extra, googleUser) {
+    googleUser.refreshToken = extra.refresh_token;
+    googleUser.expiresIn = extra.expires_in;
+    return usersByGoogleId[googleUser.id] || (usersByGoogleId[googleUser.id] = addUser('google', googleUser));
+  })
+  .redirectPath('/');
+
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://admin:admin@ds061258.mongolab.com:61258/streambox');
@@ -30,9 +60,7 @@ var Track = mongoose.model('Track', {
 	name: String
 });
 
-Track.find(function(err, resp){
-	console.log(resp);
-});
+
 
 
 
@@ -66,9 +94,30 @@ Track.find(function(err, resp){
  // 	});
  // })
 
+var app = express();
+
+  app.use(bodyParser())
+  .use(cookieParser('htuayreve'))
+  .use(session())
+  .use(everyauth.middleware());
 
 
-return;
+
+app.set('port', (process.env.PORT || 3000));
+
+app.use(express.static(__dirname + '/static'));
+
+
+app.listen(app.get('port'), function() {
+  console.log('Node app is running on port', app.get('port'));
+});
+
+
+
+ app.get('/au', function(request, response) {
+  response.send(1);
+});
+
 
 
 var playlist = [];
@@ -77,6 +126,21 @@ var playlist = [];
 app.get('/list', function(request, response) {
   response.send(playlist);
 });
+
+var routes = require('./routes/routes.js');
+_.each(routes, function(routePackagePath){
+	var route = require('./routes/'+routePackagePath);
+	app[route.method](route.url ,route.cb);
+});
+
+
+Track.find(function(err, resp){
+	var list = _.map(resp, function(item){
+		return item.name;
+	});
+	playlist = list;
+});
+
 
 app.get('/generate', function(request, response) {
 	generate().then(function(list){

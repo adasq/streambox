@@ -1,7 +1,8 @@
 <html>
 
 <body>
-
+<a href="/auth/google">sssssssssss</a>
+<a href="/logout"> out</a>
 czesc!
 
 <link rel="stylesheet" href="https://cdn.plyr.io/1.1.13/plyr.css">
@@ -20,7 +21,7 @@ czesc!
 <div style="bottom: 0px; position: fixed; width: 100%;" class="player">
     <audio controls>
         <!-- Audio files -->
-        <source src="/file?p=/nuta/GOLD/Abba%20–%20Dancing%20Queen.mp3" type="audio/mp3"> 
+        <source src="" type="audio/mp3"> 
 
         <!-- Fallback for browsers that don't support the <audio> element -->
         <a href="/file?p=/nuta/09.2014/15.%20Slasher.mp3">Download</a>
@@ -96,10 +97,13 @@ $.get('/list', function(responseObj){
 		listEl.append(itemEl.clone().text(item).attr('id', 'track-'+i));	
 	});
 	
+ });
 
-	array
+$.get('/au', function(responseObj){
+	console.log(responseObj);
+	 
+ });
 
-});
 
 
 function init(){
