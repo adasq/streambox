@@ -135,7 +135,7 @@ function retriveAndSaveTracks(cb){
 
 function getDropboxTracks(){
 	var deferred = q.defer();
-	DropboxManager.dig(['/nuta/GOLD']).then(function(result){
+	DropboxManager.dig(['/nuta']).then(function(result){
 		var list = [];
 		_.each(result, function(innerList){
 			list = list.concat(innerList);
