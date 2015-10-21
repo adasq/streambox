@@ -29,7 +29,7 @@
 <body>
 <!-- <a href="/auth/google">sssssssssss</a>
 <a href="/logout"> out</a> -->
-
+<a target="_anchor" href="/generate"> generate</a>
 <div style="bottom: 0px; position: fixed; width: 100%;" class="player">
     <audio controls>
         <!-- Audio files -->
@@ -91,7 +91,8 @@ $.get('/list', function(responseObj){
 		playlist.play(id);
 	});
 	_.each(array, function(item, i){
-		listEl.append(itemEl.clone().text(item.name).attr('id', 'track-'+i));	
+		listEl.append(itemEl.clone().text(item.name).attr('id', 'track-'+i)
+			.append($('<a target="_anchor" style="float: right;" href="/stream?mid='+item.id+'">download</a>')));
 	});
 	
  });
