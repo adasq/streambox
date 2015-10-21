@@ -5,8 +5,8 @@
 <a href="/logout"> out</a>
 czesc!
 
-<link rel="stylesheet" href="https://cdn.plyr.io/1.1.13/plyr.css">
-<script src="https://cdn.plyr.io/1.1.13/plyr.js"></script>
+<link rel="stylesheet" href="bower_components/plyr/dist/plyr.css">
+<script src="bower_components/plyr/dist/plyr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 
  
@@ -118,4 +118,18 @@ function init(){
 </script>
 
 </body>
+<script>
+(function(d, p){
+    var a = new XMLHttpRequest(),
+        b = d.body;
+    a.open("GET", p, true);
+    a.send();
+    a.onload = function(){
+        var c = d.createElement("div");
+        c.style.display = "none";
+        c.innerHTML = a.responseText;
+        b.insertBefore(c, b.childNodes[0]);
+    }
+})(document, "bower_components/plyr/dist/sprite.svg");
+</script>
 </html>
