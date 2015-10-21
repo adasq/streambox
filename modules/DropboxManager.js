@@ -27,8 +27,7 @@ function getCats(path){
 	dropbox.getFiles(path).then(function(obj){  
 		 files = obj.contents;		 
 		 var dirs = _.filter(files, filter.isDir);
-		 var fileList = _.filter(files, filter.isFile);	
-		 console.log(_.pluck(fileList,'path'));
+		 var fileList = _.filter(files, filter.isFile);
 		 fileTree[path] = _.pluck(fileList,'path');
 		 
 		 deferred.resolve(_.pluck(dirs, 'path'));

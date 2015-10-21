@@ -1,9 +1,18 @@
+var nconf = require('nconf');
+nconf
+.env()
+.file('./config.json');
+
+
 var express = require('express');
 var q = require('q');
 var async = require('async');
+var mongoose = require('mongoose');
+
 var _ = require('underscore')
   , everyauth = require('everyauth')
   , conf = require('./conf');
+var Playlist = require('./modules/Playlist.js');
 
 var DropboxManager = require('./modules/DropboxManager.js');
 var Dropbox = require('./modules/Dropbox.js');
@@ -17,7 +26,6 @@ var usersById = {};
 var nextUserId = 0;
 var usersByGoogleId = {};
 
-console.log(process.env.TOKEN);
 
 function addUser (source, sourceUser) {
   var user;
@@ -51,120 +59,115 @@ everyauth.google
   .redirectPath('/');
 
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://admin:admin@ds061258.mongolab.com:61258/streambox');
-
-
-
+mongoose.connect(nconf.get('DB_URI'));
 var Track = mongoose.model('Track', {
 	name: String
 });
+mongoose.connection.on("open", init);
+
+//------------------------------------------------------------------------------------
+function init(){
+  retriveAndSaveTracks(function(tracks){
+      console.log(tracks);
+      startServer();
+  });
+}
+//------------------------------------------------------------------------------------
 
 
-
-
-
-// track.save(function(err){
-// 	console.log('not saved');
-// })
-//var Cat = mongoose.model('Cat', { name: String });
-
-// var kitty = new Cat({ name: 'Zildjian' });
-// kitty.save(function (err) {
-//   if (err) // ...
-//   console.log('meow');
-// });
-
-
-// Cat.find({}, function(){
-// 	console.log(arguments);
-// })
-
-
-
- // generate().then(function(items){
- // 	_.each(items, function(trackName){
- // 		var track = new Track({
- // 			name: trackName
-	// 	});
-	// 	track.save(function(err){
-	// 		console.log('err');
-	// 	})
-
- // 	});
- // })
-
-var app = express();
+function startServer(){
+  var app = express();
 
   app.use(bodyParser())
-  .use(cookieParser('htuayreve'))
-  .use(session())
-  .use(everyauth.middleware());
+    .use(cookieParser('htuayreve'))
+    .use(session())
+    .use(everyauth.middleware());
 
 
-
-app.set('port', (process.env.PORT || 3000));
-
-app.use(express.static(__dirname + '/static'));
+  app.set('port', (nconf.get('PORT') || 3000));
+  app.use(express.static(__dirname + '/static'));
 
 
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
+  app.listen(app.get('port'), function() {
+    console.log('Node app is running on port', app.get('port'));
+  });
+
+  var routes = require('./routes/routes.js');
+  _.each(routes, function(routePackagePath){
+    var route = require('./routes/'+routePackagePath);
+    app[route.method](route.url ,route.cb);
+  });
+
+  app.get('/list', function(request, response) {
+    response.send(Playlist.getTracks());
+  });
+
+  app.get('/generate', function(request, response) {
+    Track.collection.remove();
+    retriveAndSaveTracks(function(tracks){
+      response.send(tracks);
+    });
+  });
+}
+
+//----------------------------------------------------------------------
+
+function getSavedTracks(cb){
+ Track.find(function(err, tracks){
+   cb(_.map(tracks, function(track){
+      return {
+        name: track.name,
+        id: track._id+''
+      };
+   })); 
+}); 
+}
+
+function retriveAndSaveTracks(cb){
+  getDropboxTracks().then(function(trackNames){
+  saveTrackNames(trackNames).then(function(savedTracks){
+     Playlist.setTracks(savedTracks);
+     cb && cb(savedTracks);
+  });
 });
+}
 
-
-
- app.get('/au', function(request, response) {
-  response.send(1);
-});
-
-
-
-var playlist = [];
-
-
-app.get('/list', function(request, response) {
-  response.send(playlist);
-});
-
-var routes = require('./routes/routes.js');
-_.each(routes, function(routePackagePath){
-	var route = require('./routes/'+routePackagePath);
-	app[route.method](route.url ,route.cb);
-});
-
-
-Track.find(function(err, resp){
-	var list = _.map(resp, function(item){
-		return item.name;
-	});
-	playlist = list;
-});
-
-
-app.get('/generate', function(request, response) {
-	generate().then(function(list){
-		response.send(list);
-	})
-  
-});
-
-
-
-function generate(){
+function getDropboxTracks(){
 	var deferred = q.defer();
 	DropboxManager.dig(['/nuta/GOLD']).then(function(result){
 		var list = [];
 		_.each(result, function(innerList){
 			list = list.concat(innerList);
 		});
-		playlist = list;
-		console.log('generated');
 		deferred.resolve(list);
 	});
 	return deferred.promise;
 }
 
+function saveTrackNames(tracks){
+  var deferred = q.defer();
+  console.log('saving...')
+  var promises =_.map(tracks, function(trackName){    
+    return function(callback){
+      var track = new Track({
+        name: trackName
+      });
+      track.save(function(err, result){
+        callback(err, err || {
+          name: result.name,
+          id: result._id+''
+        });
+      });
+    }    
+  });
 
-
+  async.parallel(promises, function(err, result){
+    if(err){
+      deferred.reject();
+      return console.log('err while saving tracks');
+    }
+    deferred.resolve(result);
+  });
+  return deferred.promise;
+}
 

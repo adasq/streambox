@@ -49,7 +49,7 @@ var playlist = {
 		if( !_.isUndefined(index) )	{
 			this.currentIndex = index;
 		}
-		player.source('/stream?mid='+encodeURIComponent(this.list[this.currentIndex]));
+		player.source('/stream?mid='+encodeURIComponent(this.list[this.currentIndex].id));
 		player.play();
 	},
 	setNext: function(){
@@ -94,7 +94,7 @@ $.get('/list', function(responseObj){
 		playlist.play(id);
 	});
 	_.each(array, function(item, i){
-		listEl.append(itemEl.clone().text(item).attr('id', 'track-'+i));	
+		listEl.append(itemEl.clone().text(item.name).attr('id', 'track-'+i));	
 	});
 	
  });
