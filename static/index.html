@@ -1,42 +1,47 @@
 <html>
-
-<body>
-<a href="/auth/google">sssssssssss</a>
-<a href="/logout"> out</a>
-czesc!
-
-<link rel="stylesheet" href="bower_components/plyr/dist/plyr.css">
+<head>
 <script src="bower_components/plyr/dist/plyr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-
- 
+<link rel="stylesheet" href="bower_components/plyr/dist/plyr.css">
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-<div><h3>czesc</h3></div> 
-
-<!-- <video width="400" controls>
-  <source src="/file?p=/nuta/09.2014/15.%20Slasher.mp3" type="audio/mp3">
-  Your browser does not support HTML5 video.
-</video> -->
+<style type="text/css">
+	* {
+		padding: 0;
+		margin: 0;
+	}
+	body {
+		padding: 15px;
+		font-family: Arial;
+	}
+	#list{
+		list-style: none;
+		padding-left: 0;
+	}
+	#list li {
+		margin-top: 3px;
+		font-size: 11px;
+		padding: 3px;
+		background-color: rgba(0, 0, 0, 0.06);
+		cursor: pointer;
+	}
+</style>
+</head>
+<body>
+<!-- <a href="/auth/google">sssssssssss</a>
+<a href="/logout"> out</a> -->
 
 <div style="bottom: 0px; position: fixed; width: 100%;" class="player">
     <audio controls>
         <!-- Audio files -->
-        <source src="" type="audio/mp3"> 
-
-        <!-- Fallback for browsers that don't support the <audio> element -->
-        <a href="/file?p=/nuta/09.2014/15.%20Slasher.mp3">Download</a>
+        <source src="" type="audio/mp3">  
     </audio>
 </div>
 
 <ul id="list" style="margin-bottom: 100px;"></ul>
+
+</body>
 <script>
-
-  
-
-
-
 $(function(){
-
 plyr.setup();
 var player = document.querySelectorAll(".player")[0].plyr;
 var media = player.media;
@@ -62,14 +67,6 @@ var playlist = {
 		this.play();
 	}
 };
-
-
-
-
-// media.addEventListener("playing", function() { 
-//   console.log("playing");
-
-// });
 
 media.addEventListener("pause", function() { 
   console.log("pause", media.currentTime, media.duration);
@@ -99,25 +96,12 @@ $.get('/list', function(responseObj){
 	
  });
 
-$.get('/au', function(responseObj){
-	console.log(responseObj);
-	 
- });
-
-
 
 function init(){
 	playlist.play();
 }
-
-
 });
-
-
-
 </script>
-
-</body>
 <script>
 (function(d, p){
     var a = new XMLHttpRequest(),
