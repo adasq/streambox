@@ -1,0 +1,10 @@
+{
+	"google": {
+        "clientId": "3335216477.apps.googleusercontent.com"
+      , "clientSecret": "PJMW_uP39nogdu0WpBuqMhtB"
+    },
+      "dropbox": {
+        "consumerKey": "akknopwqozt79w6"
+      , "consumerSecret": "lji13zpya8mytmq"
+}
+}
