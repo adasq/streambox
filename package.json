@@ -20,7 +20,8 @@
     "oauth": "https://github.com/cvng/node-oauth.git",
     "q": "",
     "request": "",
-    "underscore": ""
+    "underscore": "",
+    "utf8": "^2.1.1"
   },
   "engines": {
     "node": "0.12.2"

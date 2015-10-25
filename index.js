@@ -18,6 +18,10 @@ var session = require('express-session');
 
 //------------------------------------------------------------------------------------
 
+  console.log(require('utf8').encode('%28asd'));
+ 
+
+
 nconf
 .env()
 .file('./config.json');
@@ -70,6 +74,16 @@ everyauth
 
 
 var dbAdapter = new DropboxAdapter(nconf.get('DROPBOX'));
+
+dbAdapter.downloadFile('/nuta/06b.2014/Sleeper - So do it (2012).mp3')
+.then(function(r){
+  console.log('success', r.headers);
+ // r.pipe(fs.createWriteStream('aaaa.mp3'))
+}, function(err){
+  console.log(err);
+})
+
+return;
 
 mongoose.connect(nconf.get('DB_URI'));
 var Track = mongoose.model('Track', {
