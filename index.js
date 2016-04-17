@@ -62,18 +62,31 @@ everyauth.google
 
 mongoose.connect(nconf.get('DB_URI'));
 var Track = mongoose.model('Track', {
-	name: String
+	name: String,
+  rev: String
 });
 mongoose.connection.on("open", init);
 
+
 //------------------------------------------------------------------------------------
 function init(){
-  retriveAndSaveTracks(function(tracks){
-      console.log(tracks);
-      startServer();
-  });
+  Track.find().then(function(savedTracks){ 
+    Playlist.setTracks(_.map(savedTracks, function(track){
+      console.log(track);
+      return {
+        name: track.name,
+        rev: track.rev,
+        id: ''+track._id
+      };
+    }));
+    startServer();
+  })
+  // retriveAndSaveTracks(function(tracks){
+  //     startServer();
+  // });
 }
 //------------------------------------------------------------------------------------
+
 
 
 function startServer(){
@@ -124,14 +137,19 @@ function getSavedTracks(cb){
 }); 
 }
 
+
 function retriveAndSaveTracks(cb){
-  getDropboxTracks().then(function(trackNames){
-  saveTrackNames(trackNames).then(function(savedTracks){
+  Track.collection.remove();
+  getDropboxTracks().then(function(tracks){
+    
+  saveTrackNames(tracks).then(function(savedTracks){
      Playlist.setTracks(savedTracks);
+     console.log(savedTracks);
      cb && cb(savedTracks);
   });
 });
 }
+
 
 function getDropboxTracks(){
 	var deferred = q.defer();
@@ -141,20 +159,25 @@ function getDropboxTracks(){
 			list = list.concat(innerList);
 		});
 		deferred.resolve(list);
-	});
+	}, function(err){
+    console.log('err', err);
+  });
 	return deferred.promise;
 }
 
 function saveTrackNames(tracks){
   var deferred = q.defer();
   console.log('saving...')
-  var promises =_.map(tracks, function(trackName){    
+  var promises =_.map(tracks, function(trackObj){    
     return function(callback){
       var track = new Track({
-        name: trackName
+        name: trackObj.path,
+        rev: trackObj.rev
       });
       track.save(function(err, result){
+
         callback(err, err || {
+          rev: result.rev,
           name: result.name,
           id: result._id+''
         });

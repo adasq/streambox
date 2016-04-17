@@ -24,11 +24,18 @@ var fileTree = {
 function getCats(path){
 
 	var deferred = q.defer();
-	dropbox.getFiles(path).then(function(obj){  
+
+	dropbox.getFiles(path).then(function(obj){ 
 		 files = obj.contents;		 
 		 var dirs = _.filter(files, filter.isDir);
 		 var fileList = _.filter(files, filter.isFile);
-		 fileTree[path] = _.pluck(fileList,'path');
+	
+		 fileTree[path] = _.map(fileList, function(file){
+		 	return {
+		 		rev: file.rev,
+		 		path: file.path
+		 	}
+		 });
 		 
 		 deferred.resolve(_.pluck(dirs, 'path'));
 	});

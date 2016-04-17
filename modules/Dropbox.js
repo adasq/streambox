@@ -50,14 +50,36 @@ dbClass.prototype.getInfo= function(callback){
   headers: this.headers}, callback);
 } 
 
+dbClass.prototype.getFile= function(rev){ 
+  var getFileUrl = 'https://content.dropboxapi.com/2/files/download';
+  var headers = _.clone(this.headers);
 
-dbClass.prototype.getFile= function(file){
-  var getFileUrl = this.GET_FILE_URL + (file);
-  return request.get({
+  headers['Dropbox-API-Arg'] = JSON.stringify({
+    path: 'rev:'+rev
+  });
+  return request.post({
   uri: getFileUrl,
   followRedirect: false, 
-  headers: this.headers});
-} 
+  headers: headers}, function(err, res, body){
+    console.log(res.statusCode);
+    return res;
+  });
+}
+
+// dbClass.prototype.getFile= function(file){
+//   //file = file.replace(/ó/g, 'o').replace(/ł/g, 'l');
+//   var getFileUrl = this.GET_FILE_URL + (file);
+//   console.log(getFileUrl);
+//   return request.get({
+//   uri: getFileUrl,
+//   followRedirect: false, 
+//   headers: this.headers}, function(err, res, body){
+//     console.log(res);
+//     return res;
+//   });
+
+// }
+
 
 dbClass.prototype.getFiles= function(file){
   var getFileUrl = this.GET_FILES_URL+file+'?list=true&include_media_info=true';
@@ -66,7 +88,7 @@ dbClass.prototype.getFiles= function(file){
   uri: getFileUrl,
   followRedirect: false, 
   headers: this.headers}, function(err, response, data){
-    deferred.resolve(JSON.parse(data));
+      deferred.resolve(JSON.parse(data));
   });
   return deferred.promise;
 } 

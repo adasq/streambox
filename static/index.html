@@ -1,5 +1,6 @@
 <html>
 <head>
+<title></title>
 <script src="bower_components/plyr/dist/plyr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 <link rel="stylesheet" href="bower_components/plyr/dist/plyr.css">
@@ -12,6 +13,10 @@
 	body {
 		padding: 15px;
 		font-family: Arial;
+	}
+	.playing {
+		    background-color: #949494 !important;
+		    color: white;
 	}
 	#list{
 		list-style: none;
@@ -42,10 +47,18 @@
 </body>
 <script>
 $(function(){
+
+
+function updateTitle(title){
+	document.querySelector('title').text = title;
+}
+
+
 plyr.setup();
 var player = document.querySelectorAll(".player")[0].plyr;
 var media = player.media;
 
+var currentlyPlaying = null;
 
 var playlist = {
 	list: [],
@@ -56,6 +69,16 @@ var playlist = {
 		}
 		player.source('/stream?mid='+encodeURIComponent(this.list[this.currentIndex].id));
 		player.play();
+
+		var result = /\/[^\/]+\.mp3/.exec(this.list[this.currentIndex].name);
+
+		if(result && result.length === 1){
+			updateTitle(result[0].substr(1));
+		}else{
+			updateTitle(this.list[this.currentIndex].name);
+		}
+		
+		
 	},
 	setNext: function(){
 		var nextIndex = this.currentIndex+1;
@@ -68,12 +91,40 @@ var playlist = {
 	}
 };
 
+
+
+
+var events = ['canplaythrough', 'emptied', 'ended', 'error', 'loadeddata', 'loadstart', 'pause', 'play', 'playing', 'progress', 'seeked', 'seeking', 'stalled', 'timeupdate', 'volumechange', 'waiting', 'ready'];
+
+media.addEventListener('playing', function(eventName) {
+		if(currentlyPlaying){
+			currentlyPlaying.className = '';
+		}
+
+		var id = '#track-'+playlist.currentIndex;
+		location.href = id;
+		currentlyPlaying = document.querySelector(id);
+		currentlyPlaying.className = 'playing';
+});
+
+// events.forEach(function(eventName){
+	
+// 	media.addEventListener(eventName, (function(eventName) { 
+// 		return function(){
+// 			console.log(eventName, arguments);
+// 		}
+// 	})(eventName));
+// })
+
+
 media.addEventListener("pause", function() { 
   console.log("pause", media.currentTime, media.duration);
   if(media.currentTime == media.duration){
   		playlist.setNext();
   }
 });
+
+
 
 $.get('/list', function(responseObj){
 	console.log(responseObj);

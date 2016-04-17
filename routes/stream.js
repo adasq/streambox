@@ -9,8 +9,8 @@ module.exports = {
 		var id = req.query.mid;		
 		var track = Playlist.getTrackById(id);
 		if(track){
-			console.log('now playing...', track.name);
-			dropbox.getFile(track.name).pipe(res);
+			console.log('now playing...', track);
+			dropbox.getFile(track.rev).pipe(res);
 		}else{
 			console.log('no track found');
 		}
