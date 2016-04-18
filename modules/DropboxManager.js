@@ -30,12 +30,17 @@ function getCats(path){
 		 var dirs = _.filter(files, filter.isDir);
 		 var fileList = _.filter(files, filter.isFile);
 	
-		 fileTree[path] = _.map(fileList, function(file){
-		 	return {
-		 		rev: file.rev,
-		 		path: file.path
+		 fileTree[path] = _.compact(_.map(fileList, function(file){
+		 	if(/audio/.test(file.mime_type)){
+			 	return {
+			 		rev: file.rev,
+			 		path: file.path
+			 	};
+		 	}else{
+		 		return false;
 		 	}
-		 });
+
+		 }));
 		 
 		 deferred.resolve(_.pluck(dirs, 'path'));
 	});
@@ -58,7 +63,7 @@ function dig(dirArray){
 			};
 		});
 		async.parallel(arr, function(err, result){
-			deferred.resolve(fileTree);
+			deferred.resolve((fileTree));
 		});
 	 } 
 	return deferred.promise;
