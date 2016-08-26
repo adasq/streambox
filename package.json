@@ -18,7 +18,8 @@
     "request": "",
     "underscore": "",
     "mongoose": "^4.0.6",
-    "nconf": "^0.8.2"
+    "nconf": "^0.8.2",
+    "dropbox-v2-api": ""
   },
   "engines": {
     "node": "0.12.2"

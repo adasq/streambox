@@ -1,0 +1,14 @@
+        <a target="_anchor" href="/generate">generate</a>
+        <a target="_anchor" href="/list">list</a>
+
+<ul id="list" style="margin-bottom: 100px;">
+    <li id="track-{{track.id}}" ng-click="play(track)" ng-repeat="track in tracks">
+        {{track.name}}
+        <a target="_anchor" style="float: right;" href="/stream?mid={{track.id}}">download</a>
+    </li>
+</ul>
+<section ui-view>
+
+    </section>
+
+        <player></player>

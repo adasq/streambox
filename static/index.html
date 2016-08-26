@@ -1,6 +1,13 @@
 <html>
 <head>
 <title></title>
+
+
+<script src="https://code.angularjs.org/1.5.5/angular.min.js"></script>
+<script src="http://angular-ui.github.io/ui-router/release/angular-ui-router.min.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-scroll/1.0.0/angular-scroll.min.js"></script>
+
 <script src="bower_components/plyr/dist/plyr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 <link rel="stylesheet" href="bower_components/plyr/dist/plyr.css">
@@ -30,130 +37,113 @@
 		cursor: pointer;
 	}
 </style>
-</head>
-<body>
-<!-- <a href="/auth/google">sssssssssss</a>
-<a href="/logout"> out</a> -->
-<a target="_anchor" href="/generate"> generate</a>
-<div style="bottom: 0px; position: fixed; width: 100%;" class="player">
-    <audio controls>
-        <!-- Audio files -->
-        <source src="" type="audio/mp3">  
-    </audio>
-</div>
 
-<ul id="list" style="margin-bottom: 100px;"></ul>
-
-</body>
 <script>
-$(function(){
 
+angular.module('streambox', ['ui.router', 'duScroll'])
+.config(function($stateProvider, $urlRouterProvider){
 
-function updateTitle(title){
-	document.querySelector('title').text = title;
-}
+$urlRouterProvider.when('', 'home');
 
+$stateProvider
+	.state('main', {
+		url: '/home',
+      	templateUrl: "main.tpl.html",
+      	controller: 'main',
+      	resolve: {
+      		playlistItems: function($http){
+      			return $http.get('/list').then(function(response){
+					return response.data;
+				});
+      		}
+      	}
+	})
+    .state('main.play', {
+      url: "/play/:id/:name",
+      controller: 'PlayCtrl'
+    })
 
-plyr.setup();
-var player = document.querySelectorAll(".player")[0].plyr;
-var media = player.media;
+})
+.controller('PlayCtrl', function($stateParams, PlaylistService, PlayerService, $document){
+	var track = PlaylistService.getById($stateParams.id);
+	setTimeout(function(){
+		PlayerService.play(track);
 
-var currentlyPlaying = null;
-
-var playlist = {
-	list: [],
-	currentIndex: 0,
-	play: function(index){	
-		if( !_.isUndefined(index) )	{
-			this.currentIndex = index;
-		}
-		player.source('/stream?mid='+encodeURIComponent(this.list[this.currentIndex].id));
-		player.play();
-
-		var result = /\/[^\/]+\.mp3/.exec(this.list[this.currentIndex].name);
-
-		if(result && result.length === 1){
-			updateTitle(result[0].substr(1));
-		}else{
-			updateTitle(this.list[this.currentIndex].name);
-		}
-		
-		
-	},
-	setNext: function(){
-		var nextIndex = this.currentIndex+1;
-		if(this.list.length === nextIndex){
-			this.currentIndex = 0;
-		}else{
-			this.currentIndex = nextIndex;
-		}
-		this.play();
-	}
-};
-
-
-
-
-var events = ['canplaythrough', 'emptied', 'ended', 'error', 'loadeddata', 'loadstart', 'pause', 'play', 'playing', 'progress', 'seeked', 'seeking', 'stalled', 'timeupdate', 'volumechange', 'waiting', 'ready'];
-
-media.addEventListener('playing', function(eventName) {
-		if(currentlyPlaying){
-			currentlyPlaying.className = '';
-		}
-
-		var id = '#track-'+playlist.currentIndex;
-		location.href = id;
+		var id = ['#track-', track.id].join('');
+		 $document.scrollToElement(document.querySelector(id), 100, 1000);
 		currentlyPlaying = document.querySelector(id);
 		currentlyPlaying.className = 'playing';
-});
-
-// events.forEach(function(eventName){
-	
-// 	media.addEventListener(eventName, (function(eventName) { 
-// 		return function(){
-// 			console.log(eventName, arguments);
-// 		}
-// 	})(eventName));
-// })
-
-
-media.addEventListener("pause", function() { 
-  console.log("pause", media.currentTime, media.duration);
-  if(media.currentTime == media.duration){
-  		playlist.setNext();
-  }
-});
-
-
-
-$.get('/list', function(responseObj){
-	console.log(responseObj);
-	var array = [];
-	_.each(responseObj, function(list){
-		array = array.concat(list)
-	});	
-	playlist.list = array;
-	init();
-
-	var itemEl = $('<li></li>');
-	var listEl = $('#list').on('click', 'li', function(event){
-		var id = +event.target.id.split('-')[1];
-	
-		playlist.play(id);
 	});
-	_.each(array, function(item, i){
-		listEl.append(itemEl.clone().text(item.name).attr('id', 'track-'+i)
-			.append($('<a target="_anchor" style="float: right;" href="/stream?mid='+item.id+'">download</a>')));
-	});
-	
- });
+})
+.directive('player', function(PlaylistService, PlayerService, $state){
+	function link(scope, elem, attr, playerCtrl){
+		plyr.setup();
+		var player = document.querySelectorAll(".player")[0].plyr;
+		var media = player.media;
 
+		var currentId = null;
 
-function init(){
-	playlist.play();
-}
+		media.addEventListener("pause", function() { 
+		  console.log("pause", media.currentTime, media.duration);
+		  if(media.currentTime == media.duration){
+		  		var nextTrack =  PlaylistService.list[currentId+1];
+  				
+		  		var name = nextTrack.name.replace(/\s+/g, '_');
+				$state.go('main.play', {id: nextTrack.id, name: name});
+		  }
+		});
+
+		playerCtrl.onPlay(function(track){
+			player.source('/stream?mid='+track.id);
+			currentId = track.i;
+			player.play();
+		});
+	}
+
+	function controller(PlayerService){
+		var ctrl = this;
+		ctrl.onPlay = function(_playCallback){
+			ctrl.playCallback = _playCallback;
+		}
+		PlayerService.play = function(track){
+			ctrl.playCallback(track);
+		}
+	}
+
+	return {
+		link: link,
+		restrict: 'E',
+		controller: controller,
+		templateUrl: '/player.tpl.html' 
+	};
+
+})
+.service('PlaylistService', function(){
+	this.list = [];
+	this.getById = function(id){
+		return _.find(this.list, function(item, i){
+			if(item.id === id){
+				item.i = i;
+				return true;
+			}
+		});
+	};
+})
+.service('PlayerService', function(){
+
+})
+.controller('main', function($scope, $state, playlistItems, PlaylistService){
+	$scope.play = function(track){
+		var name = track.name.replace(/\s+/g, '_');
+		$state.go('main.play', {id: track.id, name: name});
+	};
+	$scope.tracks = PlaylistService.list = playlistItems;
 });
 </script>
+</head>
+<body ng-app="streambox">
+	<section ui-view></section>
+</body>
 <script>
 (function(d, p){
     var a = new XMLHttpRequest(),

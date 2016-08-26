@@ -8,69 +8,26 @@ var dropbox = new Dropbox();
 
 
 
-var filter = {
-	isDir: function(file){
-		return file.is_dir;
-	},
-	isFile: function(file){
-		return !file.is_dir;
-	}
-};
-
-var fileTree = {
-
-};
-
-function getCats(path){
-
+function getFiles(dir){
 	var deferred = q.defer();
 
-	dropbox.getFiles(path).then(function(obj){ 
-		 files = obj.contents;		 
-		 var dirs = _.filter(files, filter.isDir);
-		 var fileList = _.filter(files, filter.isFile);
-	
-		 fileTree[path] = _.compact(_.map(fileList, function(file){
-		 	if(/audio/.test(file.mime_type)){
-			 	return {
+	dropbox.getFiles(dir).then(function(files){
+		
+      var parsedFiles = _.map(files, function(file){
+      	if(file['.tag'] !== 'file' || !file.path_lower.match(/\.mp3$/)){
+      		return null;
+      	}else{
+      		return {
 			 		rev: file.rev,
-			 		path: file.path
-			 	};
-		 	}else{
-		 		return false;
-		 	}
-
-		 }));
-		 
-		 deferred.resolve(_.pluck(dirs, 'path'));
+			 		path: file.name
+			 };
+      	}
+      }); 
+      deferred.resolve(_.compact(parsedFiles))
 	});
 	return deferred.promise;
 }
 
-function dig(dirArray){
-
-	var deferred = q.defer();
-	 if(dirArray.length === 0){
-	 	deferred.resolve();
-	 }	else {
-		 var arr = _.map(dirArray, function(dir){
-			return function(cb){
-				getCats(dir).then(function(result){
-					dig(result).then(function(){
-						cb(null, result);
-					});
-				});
-			};
-		});
-		async.parallel(arr, function(err, result){
-			deferred.resolve((fileTree));
-		});
-	 } 
-	return deferred.promise;
-}
-
-
-
 module.exports = {
-	dig: dig
+	getFiles: getFiles
 };
