@@ -35,7 +35,7 @@ dbClass2.prototype.getFile = function(rev){
           path:  "rev:" + rev
         }       
       }, function callback(err, response){
-        if(err){ throw err; }
+        if(err){ console.log(err); throw err; }
       });
       return dropboxStream; 
 };

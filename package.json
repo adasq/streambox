@@ -22,7 +22,7 @@
     "dropbox-v2-api": ""
   },
   "engines": {
-    "node": "0.12.2"
+    "node": "6.9.1"
   },
   "repository": {
     "type": "git",
