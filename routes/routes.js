@@ -1,1 +1,1 @@
-module.exports = ['fetchMusicTree.js', 'stream.js', 'list.js'];
+module.exports = ['stream.js', 'list.js'];

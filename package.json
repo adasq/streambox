@@ -1,5 +1,5 @@
 {
-  "name": "streams",
+  "name": "streambox",
   "version": "1.0.0",
   "description": "Stream music via dropbox",
   "main": "index.js",
@@ -8,17 +8,12 @@
   },
   "dependencies": {
     "async": "",
-    "body-parser": "^1.13.1",
-    "cookie-parser": "^1.3.5",
-    "everyauth": "^0.4.9",
-    "express": "~4.9.x",
-    "express-session": "^1.11.3",
-    "jade": "^1.11.0",
+    "express": "4.9.x",
     "q": "",
     "request": "",
     "underscore": "",
-    "mongoose": "^4.0.6",
-    "nconf": "^0.8.2",
+    "mongoose": "4.0.6",
+    "nconf": "0.8.2",
     "dropbox-v2-api": "latest"
   },
   "engines": {
@@ -28,12 +23,5 @@
     "type": "git",
     "url": "https://github.com/adasq/streambox.git"
   },
-  "keywords": [
-    "node",
-    "heroku",
-    "express"
-  ],
-  "license": "MIT",
-  "devDependencies": { 
-  }
+  "license": "MIT"
 }
