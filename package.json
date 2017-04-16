@@ -19,7 +19,7 @@
     "underscore": "",
     "mongoose": "^4.0.6",
     "nconf": "^0.8.2",
-    "dropbox-v2-api": ""
+    "dropbox-v2-api": "latest"
   },
   "engines": {
     "node": "6.9.1"
